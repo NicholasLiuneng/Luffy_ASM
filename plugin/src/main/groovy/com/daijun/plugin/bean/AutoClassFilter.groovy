@@ -10,6 +10,6 @@ class AutoClassFilter {
     String interfaceName = ''
     String methodName = ''
     String methodDesc = ''
-    Closure mathodVisitor
+    Closure methodVisitor
     boolean isAnnotation = false
 }
