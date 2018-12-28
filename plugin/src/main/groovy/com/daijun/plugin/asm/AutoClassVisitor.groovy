@@ -1,6 +1,9 @@
-package com.daijun.plugin.asm;
+package com.daijun.plugin.asm
 
+import com.daijun.plugin.GlobalProject
+import com.daijun.plugin.util.Logger;
 import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes;
 
 /**
@@ -13,9 +16,9 @@ import org.objectweb.asm.Opcodes;
 class AutoClassVisitor extends ClassVisitor {
 
     private ClassVisitor classVisitor
-    private String className
-    private String superName
-    private String[] interfaces
+    private String mClassName
+    private String mSuperName
+    private String[] mInterfaces
 
     AutoClassVisitor(ClassVisitor cv) {
         super(Opcodes.ASM6, cv)
@@ -34,24 +37,35 @@ class AutoClassVisitor extends ClassVisitor {
      * @param signature 表示泛型信息，没有定义泛型则为null
      * @param superName 表示所继承的父类，默认是Object，即java/lang/Object
      * @param interfaces 表示类实现的接口，在 Java 中类是可以实现多个不同的接口因此此处是一个数组。
-     *
-     * haowanyou-plugin:组件注册处理
-     * https://github.com/alibaba/ARouter.git
-     * haowanyou-plugin:字节码处理相关
-     * https://github.com/Leaking/Hunter.git
-     * haowanyou-processor:组件代码生成规则
-     * haowanyou-core:组件及事件优先级处理
-     * https://github.com/meituan/WMRouter.git
-     * haowanyou-event:组件处理
-     * https://github.com/trello/RxLifecycle.git
-     * https://github.com/ReactiveX/RxJava.git
-     * haowanyou-event:事件线程处理
-     * https://github.com/BoltsFramework/Bolts-Android.git
-     * https://github.com/square/okhttp.git
      */
     @Override
     void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-
+        mClassName = name
+        mSuperName = superName
+        mInterfaces = interfaces
+        Logger.info("\n||开始扫描类：${mClassName}")
+        Logger.info("||类详情：version = ${version}, access = ${Logger.accCode2String(access)}, signature = ${signature}," +
+                "superName = ${superName},interfaces = ${interfaces.toArrayString()}")
         super.visit(version, access, name, signature, superName, interfaces)
+    }
+
+    /**
+     * 扫描类的方法
+     * @param access 方法的修饰符
+     * @param name 方法名，在asm中visitMethod方法会处理构造方法，静态代码块，私有方法，受保护的方法，共有方法，native类型方法
+     *                      构造方法的方法名是<init>，静态代码块的方法名是<clinit>
+     * @param desc 方法签名，格式：（参数列表类型）返回值类型
+     * @param signature 方法的泛型信息，并且该值基本等于方法签名，只不过泛型参数被特殊标记
+     * @param exceptions 表示方法是否抛出异常，没有则null
+     * @return
+     */
+    @Override
+    MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        def methodVisitor = cv.visitMethod(access, name, desc, signature, exceptions)
+        MethodVisitor adapter = null
+        if (GlobalProject.isOpenLogTrack()) {
+
+        }
+        return super.visitMethod(access, name, desc, signature, exceptions)
     }
 }
