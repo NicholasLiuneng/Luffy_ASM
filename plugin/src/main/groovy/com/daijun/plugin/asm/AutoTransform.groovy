@@ -1,4 +1,4 @@
-package com.daijun.plugin
+package com.daijun.plugin.asm
 
 import com.android.build.api.transform.Context
 import com.android.build.api.transform.Format;
@@ -8,11 +8,19 @@ import com.android.build.api.transform.TransformException
 import com.android.build.api.transform.TransformInput
 import com.android.build.api.transform.TransformOutputProvider
 import com.android.build.gradle.internal.pipeline.TransformManager
+import com.daijun.plugin.GlobalProject
 import com.daijun.plugin.bean.AutoClassFilter
+import com.daijun.plugin.util.AutoMatchUtil
+import com.daijun.plugin.util.AutoTextUtil
 import com.daijun.plugin.util.Logger
-import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.codec.digest.DigestUtils
+import org.apache.commons.io.IOUtils;
 
-import java.util.Set;
+import java.util.Set
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
+import java.util.jar.JarOutputStream
+import java.util.zip.ZipEntry;
 
 /**
  * @author daijun
@@ -50,8 +58,45 @@ public class AutoTransform extends Transform {
                 // 获得输出文件
                 File dest = outputProvider.getContentLocation("${destName}_${hexName}",
                         jarInput.contentTypes, jarInput.scopes, Format.JAR)
-
+                Logger.info("||-->开始遍历特定jar ${dest.absolutePath}")
+                def modifiedJar = modifyJarFile(jarInput.file, context.temporaryDir)
             }
+        }
+    }
+
+    private def modifyJarFile(File jarFile, File temporaryDir) {
+
+    }
+
+    private def mpdifyJar(File jarFile, File temporaryDir, boolean nameHex) {
+        // 读取原jar
+        def file = new JarFile(jarFile)
+        // 设置输出的jar
+        def hexName = ''
+        if (nameHex) {
+            hexName = DigestUtils.md5Hex(jarFile.absolutePath).substring(0, 8)
+        }
+        def outputJar = new File(temporaryDir, hexName + jarFile.name)
+        Logger.info("||outputJar = ${outputJar.absolutePath}")
+        def jarOutputStream = new JarOutputStream(new FileOutputStream(outputJar))
+        def entries = file.entries()
+        while (entries.hasMoreElements()) {
+            def jarEntry = entries.nextElement()
+            def inputStream = file.getInputStream(jarEntry)
+            String entryName = jarEntry.name
+            String className
+
+            def zipEntry = new ZipEntry(entryName)
+            jarOutputStream.putNextEntry(zipEntry)
+            byte[] modifiedClassBytes = null
+            byte[] sourceClassBytes = IOUtils.toByteArray(inputStream)
+            if (entryName.endsWith(".class")) {
+                className = AutoTextUtil.path2ClassName(entryName)
+                if (AutoMatchUtil.isShouldModifyClass(className)) {
+
+                }
+            }
+            Logger.info("entryName = ${entryName}, className = ${className}")
         }
     }
 

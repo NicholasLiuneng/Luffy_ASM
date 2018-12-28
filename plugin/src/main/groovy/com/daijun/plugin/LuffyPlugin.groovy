@@ -1,6 +1,7 @@
 package com.daijun.plugin
 
 import com.android.build.gradle.AppExtension
+import com.daijun.plugin.asm.AutoTransform
 import com.daijun.plugin.bean.AutoClassFilter
 import com.daijun.plugin.bean.AutoSettingsParams
 import com.daijun.plugin.util.AutoTextUtil
