@@ -1,5 +1,6 @@
-package com.daijun.plugin.util;
+package com.daijun.plugin.util
 
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 /**
@@ -55,5 +56,14 @@ public class LogAnalyticsUtil implements Opcodes {
 
     static boolean isInstanceOfFragment(String superName) {
         return targetFragmentClass.contains(superName)
+    }
+
+    static void visitMethodWithLoadedParams(MethodVisitor methodVisitor, int opcode, String owner,
+                                            String methodName, String methodDesc, int start, int count,
+                                            List<Integer> opcodes) {
+        for (int i = start; i < start + count; i++) {
+            methodVisitor.visitVarInsn(opcodes[i - start], i)
+        }
+        methodVisitor.visitMethodInsn(opcode, owner, methodName, methodDesc, false)
     }
 }

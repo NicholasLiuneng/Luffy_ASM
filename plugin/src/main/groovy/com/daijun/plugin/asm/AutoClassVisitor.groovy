@@ -1,10 +1,13 @@
 package com.daijun.plugin.asm
 
 import com.daijun.plugin.GlobalProject
-import com.daijun.plugin.util.Logger;
+import com.daijun.plugin.bean.AutoClassFilter
+import com.daijun.plugin.util.AutoMatchUtil
+import com.daijun.plugin.util.LogAnalyticsUtil
+import com.daijun.plugin.util.Logger
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Opcodes
 
 /**
  * @author daijun
@@ -15,14 +18,13 @@ import org.objectweb.asm.Opcodes;
  */
 class AutoClassVisitor extends ClassVisitor {
 
-    private ClassVisitor classVisitor
     private String mClassName
     private String mSuperName
     private String[] mInterfaces
+    private def visitedFragmentMethods = new HashSet<String>()
 
     AutoClassVisitor(ClassVisitor cv) {
         super(Opcodes.ASM6, cv)
-        classVisitor = cv
     }
 
     /**
@@ -63,9 +65,80 @@ class AutoClassVisitor extends ClassVisitor {
     MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         def methodVisitor = cv.visitMethod(access, name, desc, signature, exceptions)
         MethodVisitor adapter = null
+        // 采集日志sdk埋点检测
         if (GlobalProject.isOpenLogTrack()) {
-
+            adapter = new LogMethodVisitor(methodVisitor, access, name, desc, mClassName, mSuperName, mInterfaces, visitedFragmentMethods)
         }
-        return super.visitMethod(access, name, desc, signature, exceptions)
+        // 用户在build.gradle中自定义的methodVisitor
+        def autoClassFilters = GlobalProject.autoClassFilters
+        autoClassFilters.each { autoClassFilter ->
+            if (AutoMatchUtil.isShouldModifyCustomMethod(autoClassFilters, mClassName, name, desc, mInterfaces)) {
+                MethodVisitor userMethodVisitor
+                if (adapter == null) {
+                    userMethodVisitor = getSettingMethodVisitor(autoClassFilters, methodVisitor, access, name, desc)
+                } else {
+                    userMethodVisitor = getSettingMethodVisitor(autoClassFilters, adapter, access, name, desc)
+                }
+                adapter = userMethodVisitor
+            }
+        }
+        if (adapter != null) {
+            return adapter
+        }
+        return methodVisitor
+    }
+
+    /**
+     * 该方法是当扫描器完成类扫描是调用，如果想在类中追加某些方法，可以在该方法中实现
+     */
+    @Override
+    void visitEnd() {
+        if (GlobalProject.isOpenLogTrack() && LogAnalyticsUtil.isInstanceOfFragment(mSuperName)) {
+            MethodVisitor methodVisitor
+            // 添加剩下的方法，确保super.onHiddenChanged(hidden);等先被调用
+            LogHookConfig.sFragmentMethods.each { key, logMethodCell ->
+                if (!visitedFragmentMethods.contains(key)) {
+                    Logger.info("||Hooked class:injected method:${logMethodCell.agentName}")
+                    methodVisitor = cv.visitMethod(Opcodes.ACC_PUBLIC, logMethodCell.name, logMethodCell.desc, null, null)
+                    methodVisitor.visitCode()
+                    // call super
+                    LogAnalyticsUtil.visitMethodWithLoadedParams(methodVisitor, Opcodes.INVOKESPECIAL,
+                            mSuperName, logMethodCell.name, logMethodCell.desc, logMethodCell.paramsStart,
+                            logMethodCell.paramsCount, logMethodCell.opcodes)
+                    // call injected method
+                    LogAnalyticsUtil.visitMethodWithLoadedParams(methodVisitor, Opcodes.INVOKESTATIC,
+                    LogHookConfig.LOG_ANALYTICS_BASE, logMethodCell.agentName, logMethodCell.agentDesc,
+                        logMethodCell.paramsStart, logMethodCell.paramsCount, logMethodCell.opcodes)
+                    methodVisitor.visitInsn(Opcodes.RETURN)
+                    methodVisitor.visitMaxs(logMethodCell.paramsCount, logMethodCell.paramsCount)
+                    methodVisitor.visitEnd()
+                    methodVisitor.visitAnnotation("Lcom/mmc/lamandys/liba_datapick/AutoDataInstrumented;", false)
+                }
+            }
+        }
+        Logger.info("||--结束扫描类：${mClassName}\n")
+        super.visitEnd()
+    }
+/**
+ * app的module里面设置的自动埋点方法修改器
+ * @param filter
+ * @param methodVisitor 需要修改的方法
+ * @param access
+ * @param name
+ * @param desc
+ * @return
+ */
+    private MethodVisitor getSettingMethodVisitor(AutoClassFilter filter, MethodVisitor methodVisitor,
+                                                  int access, String name, String desc) {
+        MethodVisitor adapter = null
+        Closure vivi = filter.methodVisitor
+        if (vivi != null) {
+            try {
+                adapter = vivi(methodVisitor, access, name, desc)
+            } catch (Exception e) {
+                e.printStackTrace()
+            }
+        }
+        return adapter
     }
 }
