@@ -1,5 +1,6 @@
 package com.daijun.plugin.asm
 
+import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter;
 
@@ -10,14 +11,25 @@ import org.objectweb.asm.ClassWriter;
  */
 public class AutoModify {
 
-    static void modifyClasses(byte[] srcClassBytes) {
+    static byte[] modifyClasses(byte[] srcClassBytes) {
         byte[] classByteCode = null
-
+        try {
+            classByteCode = modifyClasses(srcClassBytes)
+        } catch (Exception e) {
+            e.printStackTrace()
+        }
+        if (classByteCode == null) {
+            classByteCode = srcClassBytes
+        }
+        return classByteCode
     }
 
-    static void modifyClass(byte[] srcClassBytes) {
+    private static byte[] modifyClass(byte[] srcClassBytes) throws Exception{
         def classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS)
-
+        def classVisitor = new AutoClassVisitor(classWriter)
+        def classReader = new ClassReader(srcClassBytes)
+        classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES)
+        return classWriter.toByteArray()
     }
 
 }

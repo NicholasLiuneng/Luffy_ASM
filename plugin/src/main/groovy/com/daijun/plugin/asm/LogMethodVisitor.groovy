@@ -4,6 +4,7 @@ import com.daijun.plugin.util.LogAnalyticsUtil
 import com.daijun.plugin.util.Logger
 import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.MethodVisitor
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.commons.AdviceAdapter
 
 /**
@@ -29,7 +30,7 @@ public class LogMethodVisitor extends AdviceAdapter {
     protected LogMethodVisitor(MethodVisitor mv, int access, String name, String desc,
                                String className, String superName, String[] interfaces,
                                HashSet<String> visitedFragmentMethods) {
-        super(ASM6, mv, access, name, desc)
+        super(Opcodes.ASM6, mv, access, name, desc)
         mAccess = access
         methodName = name
         methodDesc = desc
@@ -49,7 +50,7 @@ public class LogMethodVisitor extends AdviceAdapter {
     @Override
     AnnotationVisitor visitAnnotation(String desc, boolean visible) {
         Logger.info("||扫描到方法的注解：${desc}")
-        if (desc == 'Lcom/mmc/lamandys/liba_datapick/AutoTrackDataViewOnClick;') {
+        if (desc == 'Lcom/mmc/lamandys/liba_datapick/annotation/AutoTrackDataViewOnClick;') {
             isAutoTrackViewOnClickAnnotation = true
             Logger.info("||发现 ${methodName}${methodDesc}发现有注解 @AutoTrackDataViewOnClick")
         }
