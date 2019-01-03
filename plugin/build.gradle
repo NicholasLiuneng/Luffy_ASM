@@ -14,8 +14,8 @@ dependencies {
     implementation 'com.android.tools.build:gradle:3.2.1'
 }
 
-sourceCompatibility = "7"
-targetCompatibility = "7"
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 uploadArchives {
     repositories {
@@ -23,7 +23,7 @@ uploadArchives {
             repository(url: uri('E:\\mavenRepository'))
             pom.groupId = 'com.daijun'
             pom.artifactId = 'autotrack'
-            pom.version = '0.0.1'
+            pom.version = '0.0.6'
         }
     }
 }

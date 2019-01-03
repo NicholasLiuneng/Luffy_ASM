@@ -169,7 +169,7 @@ public class AutoTransform extends Transform {
                         modified.delete()
                     }
                     modified.createNewFile()
-                    fileOutputStream = new FileInputStream(modified)
+                    fileOutputStream = new FileOutputStream(modified)
                     fileOutputStream.write(modifiedClassBytes)
                 }
             } else {

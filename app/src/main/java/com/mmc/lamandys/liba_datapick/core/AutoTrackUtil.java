@@ -124,7 +124,7 @@ public class AutoTrackUtil {
         return false;
     }
 
-    private static String getViewId(View child) {
+    public static String getViewId(View child) {
         if (child != null && child.getId() != View.NO_ID) {
             return child.getResources().getResourceEntryName(child.getId());
         }
@@ -146,7 +146,7 @@ public class AutoTrackUtil {
             } else {
                 CharSequence text = traverseViewOnly(childAt);
                 if (!TextUtils.isEmpty(text)) {
-                    stringBuilder.append(text).append("-");
+                    stringBuilder.append("-").append(text);
                 }
             }
         }
@@ -205,7 +205,7 @@ public class AutoTrackUtil {
      * 获取当前页面全类名,优先级activity+fragment->fragment->activity
      */
     public static String getScreenNameFromView(Activity activity, View view) {
-        if (view == null) {
+        if (activity == null || view == null) {
             return null;
         }
         String fragmentName = (String) view.getTag(R.id.auto_track_tag_view_fragment_name);

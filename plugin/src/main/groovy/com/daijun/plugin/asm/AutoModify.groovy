@@ -14,7 +14,7 @@ public class AutoModify {
     static byte[] modifyClasses(byte[] srcClassBytes) {
         byte[] classByteCode = null
         try {
-            classByteCode = modifyClasses(srcClassBytes)
+            classByteCode = modifyClass(srcClassBytes)
         } catch (Exception e) {
             e.printStackTrace()
         }
