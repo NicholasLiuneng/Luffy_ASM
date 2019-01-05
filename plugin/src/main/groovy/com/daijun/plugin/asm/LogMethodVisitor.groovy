@@ -157,7 +157,7 @@ public class LogMethodVisitor extends AdviceAdapter {
                 || methodNameDesc == 'onListItemClick(Landroid/widget/ListView;Landroid/view/View;IJ)V') {
             mv.visitVarInsn(ALOAD, 1)
             mv.visitVarInsn(ALOAD, 2)
-            mv.visitVarInsn(ALOAD, 3)
+            mv.visitVarInsn(ILOAD, 3)
             mv.visitMethodInsn(INVOKESTATIC, LogHookConfig.LOG_ANALYTICS_BASE, "trackListView",
                     "(Landroid/widget/AdapterView;Landroid/view/View;I)V", false)
             isHasTracked = true

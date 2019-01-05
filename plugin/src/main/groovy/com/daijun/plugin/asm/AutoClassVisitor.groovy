@@ -67,7 +67,7 @@ class AutoClassVisitor extends ClassVisitor {
         MethodVisitor adapter = null
         // 采集日志sdk埋点检测
         if (GlobalProject.isOpenLogTrack()) {
-            adapter = new LogMethodVisitor(methodVisitor, access, name, desc, mClassName, mSuperName, mInterfaces, visitedFragmentMethods)
+            adapter = new LogMethodVisitor(methodVisitor, access, name, desc, mSuperName, mClassName, mInterfaces, visitedFragmentMethods)
         }
         // 用户在build.gradle中自定义的methodVisitor
         def autoClassFilters = GlobalProject.autoClassFilters

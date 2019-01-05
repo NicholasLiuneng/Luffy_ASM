@@ -23,7 +23,7 @@ uploadArchives {
             repository(url: uri('E:\\mavenRepository'))
             pom.groupId = 'com.daijun'
             pom.artifactId = 'autotrack'
-            pom.version = '0.0.6'
+            pom.version = '0.0.17'
         }
     }
 }
