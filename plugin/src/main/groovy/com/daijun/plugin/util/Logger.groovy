@@ -26,9 +26,18 @@ public class Logger {
         if (!isDebug) return
         try {
             println "${msg}"
+            write2File("${msg}\n")
         } catch (Exception e) {
             e.printStackTrace()
         }
+    }
+
+    def static write2File(String content) {
+        def file = new File("C:\\Users\\Army\\Desktop\\log.txt")
+        if (!file.exists()) {
+            file.createNewFile()
+        }
+        file.append(content.getBytes())
     }
 
     def static logForEach(Object... msg) {

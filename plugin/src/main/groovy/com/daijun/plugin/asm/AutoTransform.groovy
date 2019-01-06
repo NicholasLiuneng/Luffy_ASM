@@ -53,6 +53,7 @@ public class AutoTransform extends Transform {
                 // 获得输出文件
                 File dest = outputProvider.getContentLocation("${destName}_${hexName}",
                         jarInput.contentTypes, jarInput.scopes, Format.JAR)
+                Logger.info("||-->jarInput.file：${jarInput.file.absolutePath}")
                 Logger.info("||-->开始遍历特定jar ${dest.absolutePath}")
                 def modifiedJar = modifyJarFile(jarInput.file, context.temporaryDir)
                 Logger.info("||-->结束遍历特定jar ${dest.absolutePath}")
@@ -165,6 +166,9 @@ public class AutoTransform extends Transform {
                 def modifiedClassBytes = AutoModify.modifyClasses(sourceClassBytes)
                 if (modifiedClassBytes) {
                     modified = new File(temporaryDir, "${className.replace(".", "")}.class")
+                    if (!modified.parentFile.exists()) {
+                        modified.parentFile.mkdirs()
+                    }
                     if (modified.exists()) {
                         modified.delete()
                     }

@@ -12,10 +12,10 @@ class AutoTextUtil {
     }
 
     static String path2ClassName(String pathName) {
-        pathName.replace(File.separator, '.').replace('.class', '')
+        pathName.replace("/", '.').replace('.class', '')
     }
 
     static String changeClassName2Path(String className) {
-        className.replace('.', File.separator)
+        className.replace('.', "/")
     }
 }

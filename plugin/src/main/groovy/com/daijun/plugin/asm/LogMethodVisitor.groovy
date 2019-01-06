@@ -199,6 +199,7 @@ public class LogMethodVisitor extends AdviceAdapter {
     void visitEnd() {
         super.visitEnd()
         if (isHasTracked) {
+            // 给当前方法加上AutoDataInstrumented注解
             visitAnnotation('Lcom/mmc/lamandys/liba_datapick/AutoDataInstrumented;', false)
             Logger.info("||Hooked method：${methodName}${methodDesc}")
         }
